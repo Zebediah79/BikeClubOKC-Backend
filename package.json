@@ -1,0 +1,39 @@
+{
+  "name": "bikeclubokc-backend",
+  "version": "1.0.0",
+  "description": "BikeClub-OKC RESTful API",
+  "main": "server.js",
+  "type": "module",
+  "imports": {
+    "#*": "./*.js"
+  },
+  "scripts": {
+    "start": "node --env-file=.env server.js",
+    "dev": "node --watch --env-file=.env server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:schema": "psql -d bikeclub -f db/schema.sql",
+    "db:seed": "node --env-file=.env db/seed/js",
+    "db:reset": " npm run db:schema && npm run db:seed"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zebediah79/BikeClubOKC-Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Zebediah79/BikeClubOKC-Backend/issues"
+  },
+  "homepage": "https://github.com/Zebediah79/BikeClubOKC-Backend#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "node": "^25.2.0",
+    "pg": "^8.16.3"
+  },
+  "engines": {
+    "node": ">=25"
+  }
+}
