@@ -68,7 +68,7 @@ router.get("/:id/students/:studentId", async (req, res) => {
   res.status(201).send(req.student);
 });
 
-router.put("/:id/students/:studentId", async (req, res) => {
+router.put("/:id/students/:studentId", requireBody, async (req, res) => {
   const parentId = parseInt(req.params.id, 10);
   if (req.user.id !== parentId) return res.status(403).send("Access denied.");
 
@@ -78,7 +78,7 @@ router.put("/:id/students/:studentId", async (req, res) => {
   const existing = req.student;
   if (!existing) return res.status(404).send("Student not found.");
 
-  // Accept updated fields from body; fall back to existing values
+  //Update fields with existing values
   const {
     first_name = existing.first_name,
     last_name = existing.last_name,
@@ -147,7 +147,7 @@ router.put(
     // req.student is set by the studentId param middleware and already verified
     if (!req.student) return res.status(404).send("Student not found.");
 
-    const result = await setStudentAbsence(eventId, studentId, !!absent);
+    const result = await setStudentAbsence(eventId, studentId, absent);
     res.status(200).send({ message: "Student absence updated.", result });
   }
 );
