@@ -36,7 +36,7 @@ export async function getParents() {
   const SQL = `
     SELECT first_name, last_name, email, phone, address, waiver
     FROM parents`;
-  const { rows: parents } = db.query(SQL);
+  const { rows: parents } = await db.query(SQL);
   return parents;
 }
 
@@ -44,7 +44,7 @@ export async function getParentById(id) {
   const SQL = `SELECT * FROM parents WHERE id = $1`;
   const {
     rows: [parent],
-  } = db.query(SQL, [id]);
+  } = await db.query(SQL, [id]);
   return parent;
 }
 
@@ -59,12 +59,12 @@ export async function getParentByStudentId(id) {
   FROM parents parent
   JOIN students student
   ON parent.id = student.parent_id
-  WHERE student.id = ?
+  WHERE student.id = $1
   `;
 
   const {
-    rows: [oarent],
-  } = db.query(SQL, [id]);
+    rows: [parent],
+  } = await db.query(SQL, [id]);
   return parent;
 }
 
@@ -101,7 +101,7 @@ export async function updateParentInfo(
   } = await db.query(SQL, [
     id,
     email,
-    password,
+    hashedPassword,
     firstName,
     lastName,
     phone,

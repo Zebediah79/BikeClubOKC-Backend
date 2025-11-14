@@ -55,7 +55,7 @@ export async function getStudentById(id) {
   return student;
 }
 
-export async function getStudentsByParent(id) {
+export async function getStudentsByParentId(id) {
   const SQL = `
     SELECT 
       parent.id AS parent_id,
@@ -74,7 +74,7 @@ export async function getStudentsByParent(id) {
     WHERE parent.id = $1
     `;
 
-  const { rows: students } = db.query(SQL, [id]);
+  const { rows: students } = await db.query(SQL, [id]);
 
   return students;
 }
@@ -83,11 +83,11 @@ export async function getStudentsBySchoolId(id) {
   const SQL = `
     SELECT 
         student.first_name AS student_first_name,
-        student.last_name AS student_last_name,
-        FROM students student
-        LEFT JOIN schools school 
-        ON student.school_id = school.id
-        WHERE school.id = $1
+        student.last_name AS student_last_name
+    FROM students student
+    LEFT JOIN schools school 
+      ON student.school_id = school.id
+    WHERE school.id = $1
     `;
   const { rows: students } = await db.query(SQL, [id]);
   return students;
@@ -122,7 +122,7 @@ export async function updateStudent(
 
   const {
     rows: [student],
-  } = db.query(SQL, [
+  } = await db.query(SQL, [
     id,
     firstName,
     lastName,

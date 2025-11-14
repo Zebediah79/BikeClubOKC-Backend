@@ -46,7 +46,7 @@ export async function getEventById(id) {
   const SQL = `SELECT * FROM events WHERE id = $1`;
   const {
     rows: [event],
-  } = db.query(SQL, [id]);
+  } = await db.query(SQL, [id]);
   return event;
 }
 
@@ -54,9 +54,9 @@ export async function getEventsBySchoolId(id) {
   const SQL = `
     SELECT event.* FROM events event
     INNER JOIN schools_events schoolEvent on event.id = schoolEvent.event_id
-    WHERE schoolEvent.shool_id = $1
+    WHERE schoolEvent.school_id = $1
     `;
-  const { rows: events } = db.query(SQL, [id]);
+  const { rows: events } = await db.query(SQL, [id]);
   return events;
 }
 
@@ -68,7 +68,7 @@ export async function getEventsByVolunteerId(id) {
     WHERE volunteer.id = $1
     `;
 
-  const { rows: events } = db.query(SQL, [id]);
+  const { rows: events } = await db.query(SQL, [id]);
   return events;
 }
 
@@ -79,11 +79,11 @@ export async function getEventsByStudentId(id) {
     INNER JOIN students student ON schoolEvent.school_id = student.school_id
     WHERE student.id = $1`;
 
-  const { rows: events } = db.query(SQL, [id]);
+  const { rows: events } = await db.query(SQL, [id]);
   return events;
 }
 
-export async function setStudentsAbsence(eventId, studentId, absent) {
+export async function setStudentAbsence(eventId, studentId, absent) {
   const SQL = `
     UPDATE students_events 
     SET absent = $3
@@ -98,7 +98,7 @@ export async function setStudentsAbsence(eventId, studentId, absent) {
   return result;
 }
 
-export async function setVolunteersAbsence(eventId, volunteerId, absent) {
+export async function setVolunteerAbsence(eventId, volunteerId, absent) {
   const SQL = `
     UPDATE volunteers_events
     SET absent = $3
@@ -109,7 +109,7 @@ export async function setVolunteersAbsence(eventId, volunteerId, absent) {
 
   const {
     rows: [result],
-  } = db.query(SQL, [eventId, studentId, absent]);
+  } = await db.query(SQL, [eventId, volunteerId, absent]);
   return result;
 }
 
@@ -157,7 +157,7 @@ export async function getVolunteersByEventId(id) {
     SELECT 
     volunteer.first_name AS volunteer_first_name, 
     volunteer.last_name AS volunteer_last_name,
-    volunteer.phone AS volunteer_phone,
+    volunteer.phone AS volunteer_phone
     FROM volunteers_events volunteerEvent
     INNER JOIN volunteers volunteer ON volunteerEvent.volunteer_id = volunteer.id
     WHERE volunteerEvent.event_id = $1 AND volunteerEvent.absent = FALSE
@@ -185,8 +185,8 @@ export async function updateEvent(
         start_location = $5,
         end_location = $6,
         start_time = $7,
-        end_time = $8,
-    WHERE id = $1
+        end_time = $8
+      WHERE id = $1
     RETURNING *`;
 
   const {
@@ -209,6 +209,6 @@ export async function deleteEvent(id) {
   const SQL = `DELETE FROM events WHERE id = $1`;
   const {
     rows: [event],
-  } = db.query(SQL, [id]);
+  } = await db.query(SQL, [id]);
   return event;
 }

@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 export default router;
 
+import db from "#db/client";
 import { getVolunteerById } from "#db/queries/volunteers";
 import {
   createEvent,
@@ -9,12 +10,12 @@ import {
   getEventsByVolunteerId,
   updateEvent,
   deleteEvent,
-  enrollParticipantsForEvent,
+  enrollStudentsForEvent,
+  enrollVolunteersForEvent,
   setVolunteerAbsence,
   getStudentsAttendanceByEventId,
   getVolunteersAttendanceByEventId,
 } from "#db/queries/events";
-import db from "#db/client";
 import { createVolunteer } from "#db/queries/volunteers";
 import requireUser from "#middleware/requireUser";
 import requireBody from "#middleware/requireBody";
@@ -48,18 +49,19 @@ router.get("/volunteer/:id", async (req, res) => {
   res.status(201).send(req.profile);
 });
 
+// All events for a volunteer
 router.get("/volunteer/:id/events", async (req, res) => {
   res.status(201).send(req.events);
 });
 
-// Param middleware for eventId (used on routes that operate on a specific event)
+// Param middleware for eventId for specific events
 router.param("eventId", async (req, res, next, id) => {
   const eventId = parseInt(id, 10);
 
   // Ensure req.events exists and is an array
   if (!Array.isArray(req.events)) {
     console.error("No array of events found.", req.events);
-    return res.status(400).send("No events available for this volunteer.");
+    return res.status(400).send("No events available.");
   }
 
   // Find the event in the volunteer's events
@@ -119,47 +121,49 @@ router.put("/volunteer/:id/events/:eventId/absence", async (req, res) => {
 });
 
 /*--------------------facilitator--------------------*/
-router.get("/facilitator/:id", requireFacilitator, async (req, res) => {
+
+router.get("/facilitator", requireFacilitator);
+
+router.get("/facilitator/:id", async (req, res) => {
   res.status(201).send(req.profile);
 });
 
-router.get("/facilitator/:id/events", requireFacilitator, async (req, res) => {
+router.get("/facilitator/:id/events", async (req, res) => {
   res.status(201).send(req.events);
 });
 
-// Facilitator: get students for an event (includes absent status and parent contact)
 router.get(
-  "/facilitator/:id/events/:eventId/students",
+  "/facilitator/:id/events/:eventId",
   requireFacilitator,
   async (req, res) => {
-    try {
-      const students = await getStudentsAttendanceByEventId(req.event.id);
-      res.status(200).send(students);
-    } catch (err) {
-      console.error("Error fetching students for event:", err);
-      res.status(500).send({ error: "Failed to fetch students for event" });
-    }
+    res.status(201).send(req.event);
   }
 );
 
-// Facilitator: get volunteers attendance for an event (names + absent flag)
-router.get(
-  "/facilitator/:id/events/:eventId/volunteers",
-  requireFacilitator,
-  async (req, res) => {
-    try {
-      const vols = await getVolunteersAttendanceByEventId(req.event.id);
-      res.status(200).send(vols);
-    } catch (err) {
-      console.error("Error fetching volunteers for event:", err);
-      res.status(500).send({ error: "Failed to fetch volunteers for event" });
-    }
+// Facilitator: get students for an event (includes absent status and parent contact)
+router.get("/facilitator/:id/events/:eventId/students", async (req, res) => {
+  try {
+    const students = await getStudentsAttendanceByEventId(req.event.id);
+    res.status(200).send(students);
+  } catch (err) {
+    console.error("Error fetching students for event:", err);
+    res.status(500).send({ error: "Failed to fetch students for event" });
   }
-);
+});
+
+// Facilitator: get volunteers attendance for an event (names + absent flag)
+router.get("/facilitator/:id/events/:eventId/volunteers", async (req, res) => {
+  try {
+    const vols = await getVolunteersAttendanceByEventId(req.event.id);
+    res.status(200).send(vols);
+  } catch (err) {
+    console.error("Error fetching volunteers for event:", err);
+    res.status(500).send({ error: "Failed to fetch volunteers for event" });
+  }
+});
 
 router.post(
   "/facilitator/:id/events",
-  requireFacilitator,
   requireBody([
     "title",
     "type",
@@ -189,17 +193,17 @@ router.post(
       startTime,
       endTime
     );
-    // Link the event to the facilitator's school and enroll participants
+    // Use the facilitator's school and enroll participants
     const schoolId = req.profile.school_id;
     if (schoolId) {
-      // insert into schools_events
       await db.query(
-        `INSERT INTO schools_events (school_id, event_id) VALUES (?, ?)`,
+        `INSERT INTO schools_events (school_id, event_id) VALUES ($1, $2)`,
         [schoolId, event.id]
       );
 
-      // enroll students and volunteers for that school into the event
-      await enrollParticipantsForEvent(schoolId, event.id);
+      // Automatically enroll students and volunteers for that school into the event
+      await enrollStudentsForEvent(schoolId, event.id);
+      await enrollVolunteersForEvent(schoolId, event.id);
     }
 
     res.status(201).send({ message: "New event added.", event });
@@ -208,7 +212,6 @@ router.post(
 
 router.put(
   "/facilitator/:id/events/:eventId",
-  requireFacilitator,
   requireBody([
     "id",
     "title",
@@ -231,7 +234,7 @@ router.put(
       endTime,
     } = req.body;
 
-    const eventId = parseInt(req.params.eventId, 10) || id;
+    const eventId = parseInt(req.params.eventId, 10);
 
     const updated = await updateEvent(
       eventId,
@@ -249,11 +252,7 @@ router.put(
   }
 );
 
-router.delete(
-  "/facilitator/:id/events/:eventId",
-  requireFacilitator,
-  async (req, res) => {
-    await deleteEvent(req.event.id);
-    res.status(204).send();
-  }
-);
+router.delete("/facilitator/:id/events/:eventId", async (req, res) => {
+  await deleteEvent(req.event.id);
+  res.status(204).send();
+});

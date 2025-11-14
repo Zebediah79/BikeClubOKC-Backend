@@ -12,7 +12,7 @@
     "dev": "node --watch --env-file=.env server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "db:schema": "psql -d bikeclub -f db/schema.sql",
-    "db:seed": "node --env-file=.env db/seed/js",
+    "db:seed": "node --env-file=.env db/seed.js",
     "db:reset": " npm run db:schema && npm run db:seed"
   },
   "repository": {
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/Zebediah79/BikeClubOKC-Backend#readme",
   "dependencies": {
+    "@faker-js/faker": "^10.1.0",
     "bcrypt": "^6.0.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
