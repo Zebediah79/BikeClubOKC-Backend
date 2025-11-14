@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 #Markdown files
 THUNDER_CLIENT_TESTS.md
+API_ENDPOINTS.md
