@@ -13,8 +13,8 @@ import {
   enrollStudentsForEvent,
   enrollVolunteersForEvent,
   setVolunteerAbsence,
-  getStudentsAttendanceByEventId,
-  getVolunteersAttendanceByEventId,
+  getStudentsByEventId,
+  getVolunteersByEventId,
 } from "#db/queries/events";
 import { createVolunteer } from "#db/queries/volunteers";
 import requireUser from "#middleware/requireUser";
@@ -87,7 +87,7 @@ router.get("/volunteer/:id/events/:eventId", async (req, res) => {
 // Get students for an event (volunteer access) — returns student's name, parent's name, parent's phone, absent flag
 router.get("/volunteer/:id/events/:eventId/students", async (req, res) => {
   try {
-    const students = await getStudentsAttendanceByEventId(req.event.id);
+    const students = await getStudentsByEventId(req.event.id);
     // normalize shape: student_first_name, student_last_name, parent_first_name, parent_last_name, parent_phone, absent
     res.status(200).send(students);
   } catch (err) {
@@ -99,7 +99,7 @@ router.get("/volunteer/:id/events/:eventId/students", async (req, res) => {
 // Get volunteers attendance for an event (volunteer access) — returns volunteer name and absent flag
 router.get("/volunteer/:id/events/:eventId/volunteers", async (req, res) => {
   try {
-    const vols = await getVolunteersAttendanceByEventId(req.event.id);
+    const vols = await getVolunteersByEventId(req.event.id);
     res.status(200).send(vols);
   } catch (err) {
     console.error("Error fetching volunteers for event:", err);
@@ -143,7 +143,7 @@ router.get(
 // Facilitator: get students for an event (includes absent status and parent contact)
 router.get("/facilitator/:id/events/:eventId/students", async (req, res) => {
   try {
-    const students = await getStudentsAttendanceByEventId(req.event.id);
+    const students = await getStudentsByEventId(req.event.id);
     res.status(200).send(students);
   } catch (err) {
     console.error("Error fetching students for event:", err);
@@ -154,7 +154,7 @@ router.get("/facilitator/:id/events/:eventId/students", async (req, res) => {
 // Facilitator: get volunteers attendance for an event (names + absent flag)
 router.get("/facilitator/:id/events/:eventId/volunteers", async (req, res) => {
   try {
-    const vols = await getVolunteersAttendanceByEventId(req.event.id);
+    const vols = await getVolunteersByEventId(req.event.id);
     res.status(200).send(vols);
   } catch (err) {
     console.error("Error fetching volunteers for event:", err);

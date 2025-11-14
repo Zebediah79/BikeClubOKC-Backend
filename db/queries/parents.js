@@ -48,6 +48,24 @@ export async function getParentById(id) {
   return parent;
 }
 
+export async function getParentByEmailAndPassword(email, password) {
+  const SQL = `
+    SELECT * FROM parents
+    WHERE email = $1
+  `;
+
+  const {
+    rows: [parent],
+  } = await db.query(SQL, [email]);
+
+  if (!parent) return null;
+
+  const isValid = await bcrypt.compare(password, parent.password);
+  if (!isValid) return null;
+
+  return parent;
+}
+
 export async function getParentByStudentId(id) {
   const SQL = `
   SELECT parent.first_name, 
