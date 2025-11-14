@@ -7,8 +7,8 @@ export async function createVolunteer(
   firstName,
   lastName,
   birthdate,
-  phone,
   interest,
+  phone,
   facilitator,
   preferredSchool,
   school_id,
@@ -37,14 +37,16 @@ export async function createVolunteer(
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const { rows: volunteer } = db.query(SQL, [
+  const {
+    rows: [volunteer],
+  } = await db.query(SQL, [
     email,
     hashedPassword,
     firstName,
     lastName,
     birthdate,
-    phone,
     interest,
+    phone,
     facilitator,
     preferredSchool,
     school_id,
