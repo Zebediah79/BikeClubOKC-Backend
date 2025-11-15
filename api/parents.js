@@ -45,11 +45,8 @@ router.get("/:id/students", async (req, res) => {
 
 router.param("studentId", async (req, res, next, id) => {
   const studentId = parseInt(id, 10);
-  // req.students is the object returned by getStudentsByParentId:
-  // { id: parent_id, first_name, last_name, students: [...] }
-  const parentStudents = Array.isArray(req.students?.students)
-    ? req.students.students
-    : [];
+  // req.students is an array of student objects returned by getStudentsByParentId
+  const parentStudents = Array.isArray(req.students) ? req.students : [];
 
   // Verify the student belongs to the parent
   const belongs = parentStudents.find((s) => s.id === studentId);

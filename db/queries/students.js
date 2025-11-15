@@ -56,23 +56,12 @@ export async function getStudentById(id) {
 }
 
 export async function getStudentsByParentId(id) {
+  // Return normalized student objects for the given parent id
   const SQL = `
-    SELECT 
-      parent.id AS parent_id,
-      parent.first_name AS parent_first_name,
-      parent.last_name AS parent_last_name,
-      student.id AS student_id,
-      student.first_name AS student_first_name,
-      student.last_name AS student_last_name,
-      student.birthdate,
-      student.bike_size,
-      student.shirt_size,
-      student.earned_bike,
-      student.status AS student_status
-    FROM parents parent
-    LEFT JOIN students student ON student.parent_id = parent.id
-    WHERE parent.id = $1
-    `;
+    SELECT student.*
+    FROM students student
+    WHERE student.parent_id = $1
+  `;
 
   const { rows: students } = await db.query(SQL, [id]);
 
