@@ -3,12 +3,15 @@ import express from "express";
 const app = express();
 export default app;
 
-const devOrigin = "process.env.FRONTEND_URL_DEV";
-const prodOrigin = "process.env.FRONTEND_URL_PROD";
-const nodeEnv = process.env.NODE_ENV;
+const devOrigin = process.env.FRONTEND_URL_DEV || "http://localhost:5173";
+const prodOrigin =
+  process.env.FRONTEND_URL_PROD || "https://bikeclubokc-frontend.onrender.com";
+const nodeEnv = process.env.NODE_ENV || "development";
 
-// const allowedOrigins = nodeEnv === "production" ? prodOrigin : devOrigin;
-const allowedOrigins = [prodOrigin, devOrigin];
+const allowedOrigins =
+  nodeEnv === "production"
+    ? [prodOrigin]
+    : [devOrigin, "http://localhost:5173"];
 
 import usersRouter from "#api/users";
 import parentsRouter from "#api/parents";
@@ -20,7 +23,11 @@ import {
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
