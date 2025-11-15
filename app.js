@@ -1,6 +1,14 @@
+import cors from "cors";
 import express from "express";
 const app = express();
 export default app;
+
+const devOrigin = "process.env.FRONTEND_URL_DEV";
+const prodOrigin = "process.env.FRONTEND_URL_PROD";
+const nodeEnv = process.env.NODE_ENV;
+
+// const allowedOrigins = nodeEnv === "production" ? prodOrigin : devOrigin;
+const allowedOrigins = [prodOrigin, devOrigin];
 
 import usersRouter from "#api/users";
 import parentsRouter from "#api/parents";
@@ -9,6 +17,18 @@ import {
   getParentFromToken,
   getVolunteerFromToken,
 } from "#middleware/getUserFromToken";
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    optionsSuccessStatus: 200,
+  })
+);
+
+app.options("*", cors());
 
 app.use(express.json());
 app.use(getParentFromToken);
