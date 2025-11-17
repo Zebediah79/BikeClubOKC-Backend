@@ -56,7 +56,6 @@ export async function getStudentById(id) {
 }
 
 export async function getStudentsByParentId(id) {
-  // Return normalized student objects for the given parent id
   const SQL = `
     SELECT student.*
     FROM students student

@@ -26,7 +26,12 @@ router.post(
     const { email, password } = req.body;
     const user = await getVolunteerByEmailAndPassword(email, password);
     if (!user) return res.status(401).send("Invalid email or password.");
-    const token = createToken({ id: user.id });
+
+    const token = createToken({
+      id: user.id,
+      role: "volunteer",
+      facilitator: user.facilitator,
+    });
     res.send(token);
   }
 );

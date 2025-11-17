@@ -3,7 +3,7 @@ const router = express.Router();
 export default router;
 
 import db from "#db/client";
-import { getVolunteerById } from "#db/queries/volunteers";
+import { getVolunteerById, updateVolunteer } from "#db/queries/volunteers";
 import {
   createEvent,
   getEventById,
@@ -16,7 +16,7 @@ import {
   getStudentsByEventId,
   getVolunteersByEventId,
 } from "#db/queries/events";
-import { createVolunteer } from "#db/queries/volunteers";
+import { createVolunteer, updateVolunteer } from "#db/queries/volunteers";
 import requireUser from "#middleware/requireUser";
 import requireBody from "#middleware/requireBody";
 import requireFacilitator from "#middleware/requireFacilitator";
@@ -47,6 +47,43 @@ router.param("id", async (req, res, next, id) => {
 
 router.get("/volunteer/:id", async (req, res) => {
   res.status(201).send(req.profile);
+});
+
+router.put("/volunteer/:id", requireBody, async (req, res) => {
+  const existing = req.volunteer;
+  if (!existing) return res.status(404).send("Volunteer not found.");
+  // Destructure with existing values
+  const {
+    first_name = existing.first_name,
+    last_name = existing.last_name,
+    email = existing.email,
+    password = existing.password,
+    phone = existing.phone,
+    interest = existing.interest,
+    facilitator = existing.facilitator,
+    preferred_school = existing.preferred_school,
+    flexible = existing.flexible,
+    background_check = existing.background_check,
+    acitive_status = existing.status,
+  } = req.body;
+  const volunteerId = parseInt(req.params.id, 10);
+  const updatedVolunteer = await updateVolunteer(
+    volunteerId,
+    first_name,
+    last_name,
+    email,
+    password,
+    phone,
+    interest,
+    facilitator,
+    preferred_school,
+    flexible,
+    background_check,
+    active_status
+  );
+  if (!updatedVolunteer)
+    return res.status(404).send("Volunteer not found to update.");
+  res.status(200).send(updatedVolunteer);
 });
 
 // All events for a volunteer
@@ -96,7 +133,7 @@ router.get("/volunteer/:id/events/:eventId/students", async (req, res) => {
   }
 });
 
-// Get volunteers attendance for an event (volunteer access) — returns volunteer name and absent flag
+// Get volunteers attendance for an event (volunteer access) — returns volunteer name and absent status.
 router.get("/volunteer/:id/events/:eventId/volunteers", async (req, res) => {
   try {
     const vols = await getVolunteersByEventId(req.event.id);
@@ -120,7 +157,9 @@ router.put("/volunteer/:id/events/:eventId/absence", async (req, res) => {
   res.status(200).send({ message: "Volunteer absence updated.", result });
 });
 
-/*--------------------facilitator--------------------*/
+/*=======================================================
+                      facilitator                        
+=========================================================*/
 
 router.get("/facilitator", requireFacilitator);
 
@@ -151,7 +190,7 @@ router.get("/facilitator/:id/events/:eventId/students", async (req, res) => {
   }
 });
 
-// Facilitator: get volunteers attendance for an event (names + absent flag)
+// Facilitator: get volunteers attendance for an event (names + absent status)
 router.get("/facilitator/:id/events/:eventId/volunteers", async (req, res) => {
   try {
     const vols = await getVolunteersByEventId(req.event.id);
@@ -162,6 +201,60 @@ router.get("/facilitator/:id/events/:eventId/volunteers", async (req, res) => {
   }
 });
 
+// Create a new volunteer under the facilitator's school
+router.post(
+  "/facilitator/:id/volunteers",
+  requireBody([
+    email,
+    password,
+    firstName,
+    lastName,
+    birthdate,
+    interest,
+    phone,
+    facilitator,
+    preferredSchool,
+    flexible,
+    backgroundCheck,
+  ]),
+  async (req, res) => {
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      birthdate,
+      interest,
+      phone,
+      facilitator,
+      preferredSchool,
+      flexible,
+      bacckgroundCheck,
+    } = req.body;
+    // Use the facilitator's school and create the volunteer under that school
+    const schoolId = req.profile.school_id;
+    const newVolunteer = await createVolunteer(
+      email,
+      password,
+      firstName,
+      lastName,
+      birthdate,
+      interest,
+      phone,
+      facilitator,
+      preferredSchool,
+      schoolId,
+      flexible,
+      backgroundCheck,
+      (activeStatus = "active")
+    );
+    res
+      .status(201)
+      .send({ message: "New volunteer created.", volunteer: newVolunteer });
+  }
+);
+
+// Create a new event under the facilitator's school
 router.post(
   "/facilitator/:id/events",
   requireBody([
@@ -210,6 +303,7 @@ router.post(
   }
 );
 
+// Update an event under the facilitator's school
 router.put(
   "/facilitator/:id/events/:eventId",
   requireBody([
