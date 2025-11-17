@@ -132,16 +132,17 @@ export async function getVolunteersBySchoolId(id) {
 
 export async function updateVolunteer(
   id,
-  firstName,
-  lastName,
+  first_name,
+  last_name,
   email,
+  password,
   phone,
   interest,
   facilitator,
-  preferredSchool,
+  preferred_school,
   flexible,
-  backgroundCheck,
-  status
+  background_check,
+  active_status
 ) {
   const SQL = `
   UPDATE volunteers
@@ -149,30 +150,34 @@ export async function updateVolunteer(
       first_name = $2,
       last_name = $3,
       email = $4,
-      phone = $5,
-      interest = $6,
-      facilitator = $7,
-      preferred_school = $8,
-      flexible = $9,
-      background_check = $10,
-      status = $11
+      password = $5,
+      phone = $6,
+      interest = $7,
+      facilitator = $8,
+      preferred_school = $9,
+      flexible = $10,
+      background_check = $11,
+      status = $12
   WHERE id = $1
   RETURNING *`;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const {
     rows: [volunteer],
   } = await db.query(SQL, [
     id,
-    firstName,
-    lastName,
+    first_name,
+    last_name,
     email,
+    hashedPassword,
     phone,
     interest,
     facilitator,
-    preferredSchool,
+    preferred_school,
     flexible,
-    backgroundCheck,
-    status,
+    background_check,
+    active_status,
   ]);
 
   return volunteer;

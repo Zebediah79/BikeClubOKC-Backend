@@ -47,7 +47,7 @@ Failure: `401 Unauthorized` (invalid credentials)
 
 ## Parents routes (mount: `/parents`)
 
-All parent routes expect an `Authorization: Bearer <token>` header (token created by parent login). `:id` path parameter is the parent id and access is restricted — tokens must match the `:id`.
+All parent routes expect an `Authorization: Bearer <token>` header (token created by parent login). `:id` path parameter is the parent id and access is restricted — tokens must match the assigned token for `:id`.
 
 ### GET /parents/:id
 
@@ -230,6 +230,24 @@ Example:
   "status": "active"
 }
 ```
+
+---
+
+### PUT /volunteers/volunteer/:id
+
+- Request headers: `Content-Type: application/json`, `Authorization: Bearer <token>`
+- Request body: partial or full volunteer fields (fields that are omitted will remain unchanged). Example body:
+
+```json
+{
+  "first_name": "Samuel",
+  "last_name": "Adams",
+  "active_status": "inactive"
+}
+```
+
+- Response: `200 OK` — updated volunteer object
+- Failure: `400 Bad Request` (missing body/invalid), `401`, `403`, `404`
 
 ---
 
