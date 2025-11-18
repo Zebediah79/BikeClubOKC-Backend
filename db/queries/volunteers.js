@@ -4,17 +4,17 @@ import db from "#db/client";
 export async function createVolunteer(
   email,
   password,
-  firstName,
-  lastName,
+  first_name,
+  last_name,
   birthdate,
   interest,
   phone,
   facilitator,
-  preferredSchool,
+  preferred_school,
   school_id,
   flexible,
-  backgroundCheck,
-  status
+  background_check,
+  active_status
 ) {
   const SQL = `
     INSERT INTO volunteers (
@@ -42,17 +42,17 @@ export async function createVolunteer(
   } = await db.query(SQL, [
     email,
     hashedPassword,
-    firstName,
-    lastName,
+    first_name,
+    last_name,
     birthdate,
     interest,
     phone,
     facilitator,
-    preferredSchool,
+    preferred_school,
     school_id,
     flexible,
-    backgroundCheck,
-    status,
+    background_check,
+    active_status,
   ]);
 
   return volunteer;

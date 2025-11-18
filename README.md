@@ -256,10 +256,14 @@ Example:
 - Request body: none
 - Response: `200 OK` — array of events assigned to volunteer (by volunteer.school_id)
 
+---
+
 ### GET /volunteers/volunteer/:id/events/:eventId
 
 - Request body: none
 - Response: `200 OK` — event object
+
+---
 
 ### GET /volunteers/volunteer/:id/events/:eventId/students
 
@@ -279,10 +283,14 @@ Example item:
 }
 ```
 
+---
+
 ### GET /volunteers/volunteer/:id/events/:eventId/volunteers
 
 - Request body: none
 - Response: `200 OK` — array of volunteers for the event with absent flag
+
+---
 
 ### PUT /volunteers/volunteer/:id/events/:eventId/absence
 
@@ -305,30 +313,106 @@ Example response:
 
 All facilitator routes require the user to be a facilitator (middleware checks `req.user.facilitator`).
 
+---
+
 ### GET /volunteers/facilitator/:id
 
 - Request body: none
 - Response: `200 OK` — facilitator profile (same shape as volunteer profile)
+
+---
 
 ### GET /volunteers/facilitator/:id/events
 
 - Request body: none
 - Response: `200 OK` — list of events for facilitator's school or events they create
 
+---
+
 ### GET /volunteers/facilitator/:id/events/:eventId
 
 - Request body: none
 - Response: `200 OK` — event object
+
+---
 
 ### GET /volunteers/facilitator/:id/events/:eventId/students
 
 - Request body: none
 - Response: `200 OK` — students attending with absent flags and parent contact
 
+---
+
 ### GET /volunteers/facilitator/:id/events/:eventId/volunteers
 
 - Request body: none
 - Response: `200 OK` — volunteers attending with absent flags
+
+---
+
+### POST /volunteers/facilitator/:id/parents
+
+- Request headers: `Content-Type: application/json`, `Authorization`
+- Request body (required fields)
+- `password` field is automatically set to last name
+
+```json
+{
+  "email": "email@address.com",
+  "first_name": "Jocelyn",
+  "last_name": "Heaton",
+  "phone": "405-555-5555",
+  "address": "1234 N.W. 31st St. Oklahoma City, OK 12345",
+  "waiver": "true"
+}
+```
+
+---
+
+### POST /volunteers/facilitator/:id/parents/:id/students
+
+- Request headers: `Content-Type: application/json`, `Authorization`
+- Request body (required fields)
+- `parent_id` is auto assigned from parameter
+- `earned_bike` is set to false by default
+- `status` is set to "active" by default
+- `school_id` is set to same as facilitator's by default
+
+```json
+{
+  "first_name": "Melissa",
+  "last_name": "Raynor",
+  "birthdate": "01-27-2016",
+  "bike_size": "L",
+  "shirt_size": "M"
+}
+```
+
+---
+
+### POST /volunteers/facilitator/:id/volunteers
+
+- Request headers: `Content-Type: application/json`, `Authorization`
+- Request body (required fields):
+- `active_status` is set to default `active` state on post.
+
+```json
+{
+  "email": "Jalen_Wyman88@hotmail.com",
+  "password": "password",
+  "first_name": "Jalen",
+  "last_name": "Wyman",
+  "birthdate": "1993-01-31",
+  "interest": "Rides",
+  "phone": "1-899-541-9290",
+  "facilitator": "false",
+  "preferred_school": "Larryfort School",
+  "flexible": "yes",
+  "background_check": "true"
+}
+```
+
+---
 
 ### POST /volunteers/facilitator/:id/events
 

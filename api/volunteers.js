@@ -3,6 +3,8 @@ const router = express.Router();
 export default router;
 
 import db from "#db/client";
+import { createStudent } from "#db/queries/students";
+import { createParent } from "#db/queries/parents";
 import {
   createVolunteer,
   getVolunteerById,
@@ -52,7 +54,7 @@ router.get("/volunteer/:id", async (req, res) => {
   res.status(201).send(req.profile);
 });
 
-router.put("/volunteer/:id", requireBody, async (req, res) => {
+router.put("/volunteer/:id", requireBody(), async (req, res) => {
   const existing = req.volunteer;
   if (!existing) return res.status(404).send("Volunteer not found.");
   // Destructure with existing values
@@ -204,42 +206,140 @@ router.get("/facilitator/:id/events/:eventId/volunteers", async (req, res) => {
   }
 });
 
-// Create a new volunteer under the facilitator's school
-router.post("/facilitator/:id/volunteers", requireBody, async (req, res) => {
-  const {
-    email,
-    password,
-    first_name,
-    last_name,
-    birthdate,
-    interest,
-    phone,
-    facilitator,
-    preferred_school,
-    flexible,
-    background_check,
-  } = req.body;
-  // Use the facilitator's school and create the volunteer under that school
-  const schoolId = req.profile.school_id;
-  const newVolunteer = await createVolunteer(
-    email,
-    password,
-    first_name,
-    last_name,
-    birthdate,
-    interest,
-    phone,
-    facilitator,
-    preferred_school,
-    schoolId,
-    flexible,
-    background_check,
-    (active_status = "active")
-  );
-  res
-    .status(201)
-    .send({ message: "New volunteer created.", volunteer: newVolunteer });
+router.param("parentId", async (req, res, next, id) => {
+  const parentId = parseInt(id, 10);
+  req.parentId = parentId;
+  next();
 });
+
+// Create a new student under a parent
+
+router.post(
+  "/facilitator/:id/parents/:parentId/students",
+  requireBody([
+    "first_name",
+    "last_name",
+    "birthdate",
+    "bike_size",
+    "shirt_size",
+  ]),
+  async (req, res) => {
+    const parentId = parseInt(req.params.parentId, 10);
+    const { first_name, last_name, birthdate, bike_size, shirt_size } =
+      req.body;
+    const earned_bike = false;
+    const status = "active";
+    const schoolId = req.profile.school_id;
+    try {
+      const newStudent = await createStudent(
+        first_name,
+        last_name,
+        birthdate,
+        bike_size,
+        shirt_size,
+        earned_bike,
+        status,
+        parentId,
+        schoolId
+      );
+      res
+        .status(201)
+        .send({ message: "New students created.", student: newStudent });
+    } catch (err) {
+      console.error("Error creating student:", err);
+      res.status(500).send("Failed to create student");
+    }
+  }
+);
+router.post(
+  "/facilitator/:id/parents",
+  requireBody([
+    "email",
+    "first_name",
+    "last_name",
+    "phone",
+    "address",
+    "waiver",
+  ]),
+  async (req, res) => {
+    try {
+      const { first_name, last_name, email, phone, address, waiver } = req.body;
+
+      // Auto-generated password for facilitator-created parents
+      const password = req.body.last_name;
+      const newParent = await createParent(
+        email,
+        password,
+        first_name,
+        last_name,
+        phone,
+        address,
+        waiver
+      );
+      res
+        .status(201)
+        .send({ message: "New parent created", parent: newParent });
+    } catch (err) {
+      console.error("Error creating parent:", err);
+      res.status(500).send("Failed to create parent");
+    }
+  }
+);
+
+// Create a new volunteer under the facilitator's school
+router.post(
+  "/facilitator/:id/volunteers",
+  requireBody([
+    "email",
+    "password",
+    "first_name",
+    "last_name",
+    "birthdate",
+    "interest",
+    "phone",
+    "facilitator",
+    "preferred_school",
+    "flexible",
+    "background_check",
+  ]),
+  async (req, res) => {
+    const {
+      email,
+      password,
+      first_name,
+      last_name,
+      birthdate,
+      interest,
+      phone,
+      facilitator,
+      preferred_school,
+      flexible,
+      background_check,
+    } = req.body;
+    // Use the facilitator's school and create the volunteer under that school
+    const birthday = birthdate.split("T")[0];
+    const schoolId = req.profile.school_id;
+    const active_status = "active";
+    const newVolunteer = await createVolunteer(
+      email,
+      password,
+      first_name,
+      last_name,
+      birthday,
+      interest,
+      phone,
+      facilitator,
+      preferred_school,
+      schoolId,
+      flexible,
+      background_check,
+      active_status
+    );
+    res
+      .status(201)
+      .send({ message: "New volunteer created.", volunteer: newVolunteer });
+  }
+);
 
 // Create a new event under the facilitator's school
 router.post(
