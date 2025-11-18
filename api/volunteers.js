@@ -474,6 +474,28 @@ router.put(
   }
 );
 
+// Delete a volunteer under the facilitator's school
+router.delete("/facilitator/:id/volunteers/:volunteerId", async (req, res) => {
+  const volunteerId = req.volunteerId;
+  await db.query(`DELETE FROM volunteers WHERE id = $1`, [volunteerId]);
+  res.status(204).send();
+});
+
+// Delete a student under the facilitator's school
+router.delete("/facilitator/:id/students/:studentId", async (req, res) => {
+  const studentId = req.studentId;
+  await db.query(`DELETE FROM students WHERE id = $1`, [studentId]);
+  res.status(204).send();
+});
+
+// Delete a parent under the facilitator's school
+router.delete("/facititator/:id/parents/:parentId", async (req, res) => {
+  const parentId = req.parentId;
+  await db.query(`DELETE FROM parents WHERE id = $1`, [parentId]);
+  res.status(204).send();
+});
+
+// Delete an event under the facilitator's school
 router.delete("/facilitator/:id/events/:eventId", async (req, res) => {
   await deleteEvent(req.event.id);
   res.status(204).send();
