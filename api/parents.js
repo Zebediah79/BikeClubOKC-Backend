@@ -21,6 +21,7 @@ import { getParentFromToken } from "#middleware/getUserFromToken";
 router.use(getParentFromToken);
 router.use(requireUser);
 
+// Middleware to validate parentId and load profile and students
 router.param("id", async (req, res, next, id) => {
   const parentId = parseInt(id, 10);
 
@@ -35,14 +36,17 @@ router.param("id", async (req, res, next, id) => {
   next();
 });
 
+// Get parent profile
 router.get("/:id", async (req, res) => {
   res.status(201).send(req.profile);
 });
 
+// Get all students for a parent
 router.get("/:id/students", async (req, res) => {
   res.status(201).send(req.students);
 });
 
+// Middleware to validate studentId and ensure it belongs to the parent's students
 router.param("studentId", async (req, res, next, id) => {
   const studentId = parseInt(id, 10);
   // req.students is an array of student objects returned by getStudentsByParentId
@@ -61,11 +65,13 @@ router.param("studentId", async (req, res, next, id) => {
   next();
 });
 
+// Get specific student info
 router.get("/:id/students/:studentId", async (req, res) => {
   res.status(201).send(req.student);
 });
 
-router.put("/:id/students/:studentId", requireBody, async (req, res) => {
+// Update student info
+router.put("/:id/students/:studentId", requireBody([]), async (req, res) => {
   const parentId = parseInt(req.params.id, 10);
   if (req.user.id !== parentId) return res.status(403).send("Access denied.");
 
@@ -105,10 +111,12 @@ router.put("/:id/students/:studentId", requireBody, async (req, res) => {
   res.status(200).send(updated);
 });
 
+// Get all events for a specific student
 router.get("/:id/students/:studentId/events", async (req, res) => {
   res.status(201).send(req.events);
 });
 
+// Middleware to validate eventId and ensure it belongs to the student's events
 router.param("eventId", async (req, res, next, id) => {
   const eventId = parseInt(id, 10);
 
@@ -128,6 +136,34 @@ router.param("eventId", async (req, res, next, id) => {
   const event = await getEventById(eventId);
   req.event = event;
   next();
+});
+
+// Update parent profile info
+router.put("/:id", requireBody([]), async (req, res) => {
+  const parentId = parseInt(req.params.id, 10);
+  if (req.user.id !== parentId) return res.status(403).send("Access denied.");
+  const existing = req.profile;
+  if (!existing) return res.status(404).send("Profile not found.");
+  const {
+    email = existing.email,
+    password = existing.password,
+    first_name = existing.first_name,
+    last_name = existing.last_name,
+    phone = existing.phone,
+    address = existing.address,
+  } = req.body;
+
+  const updated = await updateParentInfo(
+    parentId,
+    email,
+    password,
+    first_name,
+    last_name,
+    phone,
+    address
+  );
+  if (!updated) return res.status(404).send("Profile not found.");
+  res.status(200).send({ message: "Profile updated updated:", updated });
 });
 
 // Parent reports child's absence (or un-reports) for an event

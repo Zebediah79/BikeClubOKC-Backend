@@ -4,9 +4,8 @@ This document lists the API endpoints implemented in the `api/` folder, the expe
 
 - `POST /users/...` maps to `api/users.js`
 - `GET|PUT /parents/...` maps to `api/parents.js` (mounted at `/parents`)
-- `GET|POST|PUT|DELETE /volunteers/...` maps to `api/volunteers.js` (mounted at `/volunteers`)
-
-If you have different mounts in `app.js`, adjust the paths accordingly.
+- `GET|PUT /volunteers/...` maps to `api/volunteers.js` (mounted at `/volunteers/volunteer`)
+- `GET|POST|PUT|DELETE /facilitator/...` maps to `api/volunteers.js` (mounted at `/volunteers/facilitator`)
 
 ---
 
@@ -322,6 +321,14 @@ All facilitator routes require the user to be a facilitator (middleware checks `
 
 ---
 
+### PUT /volunteers/facilitator/:id
+
+- Request headers: `Content-Type: application/json`, `Authorization`
+- Request body: event fields (id optional; router falls back to param)
+- Response: `200 OK` — updated event object
+
+---
+
 ### GET /volunteers/facilitator/:id/events
 
 - Request body: none
@@ -350,25 +357,6 @@ All facilitator routes require the user to be a facilitator (middleware checks `
 
 ---
 
-### POST /volunteers/facilitator/:id/parents
-
-- Request headers: `Content-Type: application/json`, `Authorization`
-- Request body (required fields)
-- `password` field is automatically set to last name
-
-```json
-{
-  "email": "email@address.com",
-  "first_name": "Jocelyn",
-  "last_name": "Heaton",
-  "phone": "405-555-5555",
-  "address": "1234 N.W. 31st St. Oklahoma City, OK 12345",
-  "waiver": "true"
-}
-```
-
----
-
 ### POST /volunteers/facilitator/:id/parents/:id/students
 
 - Request headers: `Content-Type: application/json`, `Authorization`
@@ -387,6 +375,29 @@ All facilitator routes require the user to be a facilitator (middleware checks `
   "shirt_size": "M"
 }
 ```
+
+- Response: `201 Created` — message and created student object
+
+---
+
+### POST /volunteers/facilitator/:id/parents
+
+- Request headers: `Content-Type: application/json`, `Authorization`
+- Request body (required fields)
+- `password` field is automatically set to last name
+
+```json
+{
+  "email": "email@address.com",
+  "first_name": "Jocelyn",
+  "last_name": "Heaton",
+  "phone": "405-555-5555",
+  "address": "1234 N.W. 31st St. Oklahoma City, OK 12345",
+  "waiver": "true"
+}
+```
+
+- Response: `201 Created` — message and created parrent object
 
 ---
 
@@ -411,6 +422,8 @@ All facilitator routes require the user to be a facilitator (middleware checks `
   "background_check": "true"
 }
 ```
+
+- Response: `201 Created` — message and created volunteer object
 
 ---
 

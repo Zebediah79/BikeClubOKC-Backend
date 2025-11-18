@@ -35,8 +35,10 @@ import {
 router.use(getVolunteerFromToken);
 router.use(requireUser);
 
+// Mounting point for volunteer routes.
 router.get("/", getVolunteerFromToken, checkUserRole, reRouteVolunteer);
 
+// Middleware to validate volunteerId and load profile and events
 router.param("id", async (req, res, next, id) => {
   const volunteerId = parseInt(id, 10);
 
@@ -50,12 +52,14 @@ router.param("id", async (req, res, next, id) => {
   next();
 });
 
+// Get volunteer profile
 router.get("/volunteer/:id", async (req, res) => {
   res.status(201).send(req.profile);
 });
 
-router.put("/volunteer/:id", requireBody(), async (req, res) => {
-  const existing = req.volunteer;
+// Update volunteer profile info
+router.put("/volunteer/:id", requireBody([]), async (req, res) => {
+  const existing = req.profile;
   if (!existing) return res.status(404).send("Volunteer not found.");
   // Destructure with existing values
   const {
@@ -158,7 +162,7 @@ router.put("/volunteer/:id/events/:eventId/absence", async (req, res) => {
   const eventId = parseInt(req.params.eventId, 10);
   const { absent = true } = req.body;
 
-  const result = await setVolunteerAbsence(eventId, volunteerId, !!absent);
+  const result = await setVolunteerAbsence(eventId, volunteerId, absent);
   res.status(200).send({ message: "Volunteer absence updated.", result });
 });
 
@@ -166,16 +170,58 @@ router.put("/volunteer/:id/events/:eventId/absence", async (req, res) => {
                       facilitator                        
 =========================================================*/
 
+// Mounting point for facilitator routes.
 router.get("/facilitator", requireFacilitator);
 
+// Get facilitator profile
 router.get("/facilitator/:id", async (req, res) => {
   res.status(201).send(req.profile);
 });
 
+// Update facilitator profile info
+router.put("/facilitator/:id", requireBody([]), async (req, res) => {
+  const existing = req.profile;
+  if (!existing) return res.status(404).send("Volunteer not found.");
+  // Destructure with existing values
+  const {
+    first_name = existing.first_name,
+    last_name = existing.last_name,
+    email = existing.email,
+    password = existing.password,
+    phone = existing.phone,
+    interest = existing.interest,
+    facilitator = existing.facilitator,
+    preferred_school = existing.preferred_school,
+    flexible = existing.flexible,
+    background_check = existing.background_check,
+    active_status = existing.status,
+  } = req.body;
+  const volunteerId = parseInt(req.params.id, 10);
+  const updatedVolunteer = await updateVolunteer(
+    volunteerId,
+    first_name,
+    last_name,
+    email,
+    password,
+    phone,
+    interest,
+    facilitator,
+    preferred_school,
+    flexible,
+    background_check,
+    active_status
+  );
+  if (!updatedVolunteer)
+    return res.status(404).send("Volunteer not found to update.");
+  res.status(200).send(updatedVolunteer);
+});
+
+// All events for a facilitator
 router.get("/facilitator/:id/events", async (req, res) => {
   res.status(201).send(req.events);
 });
 
+// Get specific event for facilitator
 router.get(
   "/facilitator/:id/events/:eventId",
   requireFacilitator,
@@ -206,6 +252,7 @@ router.get("/facilitator/:id/events/:eventId/volunteers", async (req, res) => {
   }
 });
 
+// Middleware to validate parentId and create parents and students
 router.param("parentId", async (req, res, next, id) => {
   const parentId = parseInt(id, 10);
   req.parentId = parentId;
@@ -318,7 +365,6 @@ router.post(
       background_check,
     } = req.body;
     // Use the facilitator's school and create the volunteer under that school
-    const birthday = birthdate.split("T")[0];
     const schoolId = req.profile.school_id;
     const active_status = "active";
     const newVolunteer = await createVolunteer(
@@ -326,7 +372,7 @@ router.post(
       password,
       first_name,
       last_name,
-      birthday,
+      birthdate,
       interest,
       phone,
       facilitator,
@@ -394,43 +440,37 @@ router.post(
 // Update an event under the facilitator's school
 router.put(
   "/facilitator/:id/events/:eventId",
-  requireBody([
-    "id",
-    "title",
-    "type",
-    "date",
-    "startLocation",
-    "endLocation",
-    "startTime",
-    "endTime",
-  ]),
+  requireBody([]),
   async (req, res) => {
+    const existing = req.event;
+    if (!existing) return res.status(404).send("Event not found.");
     const {
-      id,
-      title,
-      type,
-      date,
-      startLocation,
-      endLocation,
-      startTime,
-      endTime,
+      id = existing.id,
+      title = existing.title,
+      type = existing.type,
+      date = existing.date,
+      start_location = existing.start_location,
+      end_location = existing.end_location,
+      start_time = existing.start_time,
+      end_time = existing.end_time,
     } = req.body;
 
     const eventId = parseInt(req.params.eventId, 10);
 
-    const updated = await updateEvent(
+    const updatedEvent = await updateEvent(
       eventId,
       title,
       type,
       date,
-      startLocation,
-      endLocation,
-      startTime,
-      endTime
+      start_location,
+      end_location,
+      start_time,
+      end_time
     );
 
-    if (!updated) return res.status(404).send("Event not found to update.");
-    res.status(200).send(updated);
+    if (!updatedEvent)
+      return res.status(404).send("Event not found to update.");
+    res.status(200).send({ message: "Event updated", event: updatedEvent });
   }
 );
 

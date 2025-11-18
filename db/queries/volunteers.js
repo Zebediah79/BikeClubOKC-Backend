@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import db from "#db/client";
 
+// Create a new volunteer
 export async function createVolunteer(
   email,
   password,
@@ -58,12 +59,14 @@ export async function createVolunteer(
   return volunteer;
 }
 
+// Get all volunteers
 export async function getVolunteers() {
   const SQL = `SELECT * FROM volunteers`;
   const { rows: volunteers } = await db.query(SQL);
   return volunteers;
 }
 
+// Get volunteer by ID
 export async function getVolunteerById(id) {
   const SQL = `SELECT * FROM volunteers WHERE id = $1`;
   const {
@@ -72,6 +75,7 @@ export async function getVolunteerById(id) {
   return volunteer;
 }
 
+// Get volunteer by email and password
 export async function getVolunteerByEmailAndPassword(email, password) {
   const SQL = `
   SELECT * FROM volunteers
@@ -88,6 +92,7 @@ export async function getVolunteerByEmailAndPassword(email, password) {
   return volunteer;
 }
 
+// Get volunteers by school ID
 export async function getVolunteersBySchoolId(id) {
   if (!id) throw new Error("School ID is required.");
 
@@ -130,6 +135,7 @@ export async function getVolunteersBySchoolId(id) {
   };
 }
 
+// Update volunteer info
 export async function updateVolunteer(
   id,
   first_name,
@@ -161,7 +167,7 @@ export async function updateVolunteer(
   WHERE id = $1
   RETURNING *`;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = password ? await bcrypt.hash(password, 10) : password;
 
   const {
     rows: [volunteer],
@@ -183,6 +189,7 @@ export async function updateVolunteer(
   return volunteer;
 }
 
+// Delete volunteer by ID
 export async function deleteVolunteer(id) {
   if (!id) throw new Error("Volunteer ID is required.");
   const SQL = `DELETE FROM volunteers WHERE id = $1 RETURNING *`;
