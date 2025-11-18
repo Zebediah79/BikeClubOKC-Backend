@@ -213,7 +213,6 @@ router.param("parentId", async (req, res, next, id) => {
 });
 
 // Create a new student under a parent
-
 router.post(
   "/facilitator/:id/parents/:parentId/students",
   requireBody([
@@ -251,6 +250,8 @@ router.post(
     }
   }
 );
+
+// Create a new parent under the facilitator's school
 router.post(
   "/facilitator/:id/parents",
   requireBody([
