@@ -86,6 +86,27 @@ export async function getParentByStudentId(id) {
   return parent;
 }
 
+export async function getParentsBySchoolId(schoolId) {
+  const SQL = `
+  SELECT DISTINCT parent.id,
+         parent.first_name, 
+         parent.last_name, 
+         parent.address, 
+         parent.phone, 
+         parent.email, 
+         parent.waiver
+  FROM parents parent
+  JOIN students student
+  ON parent.id = student.parent_id
+  WHERE student.school_id = $1
+  `;
+
+  const { rows: parents } = await db.query(SQL, [schoolId]);
+  return parents;
+}
+
+
+
 export async function updateParentInfo(
   id,
   email,
