@@ -97,7 +97,7 @@ Failure: `401`, `403`
 
 ---
 
-### GET /parents/:id/students/:studentId
+### GET /parents/:id/students/:id
 
 - Request body: none
 - Response: `200 OK` — full student object
@@ -123,7 +123,7 @@ Failure: `401`, `403`, `404`
 
 ---
 
-### PUT /parents/:id/students/:studentId
+### PUT /parents/:id/students/:id
 
 - Request headers: `Content-Type: application/json`, `Authorization: Bearer <token>`
 - Request body: partial or full student fields (fields that are omitted will remain unchanged). Example body:
@@ -140,7 +140,7 @@ Failure: `401`, `403`, `404`
 
 ---
 
-### GET /parents/:id/students/:studentId/events
+### GET /parents/:id/students/:id/events
 
 - Request body: none
 - Response: `200 OK` — array of events for the student
@@ -257,14 +257,14 @@ Example:
 
 ---
 
-### GET /volunteers/volunteer/:id/events/:eventId
+### GET /volunteers/volunteer/:id/events/:id
 
 - Request body: none
 - Response: `200 OK` — event object
 
 ---
 
-### GET /volunteers/volunteer/:id/events/:eventId/students
+### GET /volunteers/volunteer/:id/events/:id/students
 
 - Request body: none
 - Response: `200 OK` — array of students attending event with parent contact and absent flag
@@ -284,14 +284,14 @@ Example item:
 
 ---
 
-### GET /volunteers/volunteer/:id/events/:eventId/volunteers
+### GET /volunteers/volunteer/:id/events/:id/volunteers
 
 - Request body: none
 - Response: `200 OK` — array of volunteers for the event with absent flag
 
 ---
 
-### PUT /volunteers/volunteer/:id/events/:eventId/absence
+### PUT /volunteers/volunteer/:id/events/:id/absence
 
 - Request headers: `Content-Type: application/json`, `Authorization`
 - Request body (optional): `{ "absent": true }` (default true in code)
@@ -336,24 +336,66 @@ All facilitator routes require the user to be a facilitator (middleware checks `
 
 ---
 
-### GET /volunteers/facilitator/:id/events/:eventId
+### GET /volunteers/facilitator/:id/events/:id
 
 - Request body: none
 - Response: `200 OK` — event object
 
 ---
 
-### GET /volunteers/facilitator/:id/events/:eventId/students
+### GET /volunteers/facilitator/:id/events/:id/students
 
 - Request body: none
 - Response: `200 OK` — students attending with absent flags and parent contact
 
 ---
 
-### GET /volunteers/facilitator/:id/events/:eventId/volunteers
+### GET /volunteers/facilitator/:id/events/:id/volunteers
 
 - Request body: none
 - Response: `200 OK` — volunteers attending with absent flags
+
+---
+
+### GET /volunteers/facilitator/:id/parents
+
+- Request body: none
+- Response: `200 OK` — parents assigned to the same school as their student's school facilitator
+
+---
+
+### GET /volunteers/facilitator/:id/parents/:id
+
+- Request body: none
+- Response: `200 OK` — single parent of a student's school facilitator
+
+---
+
+### GET /volunteers/facilitator/:id/students
+
+- Request body: none
+- Response: `200 OK` — students assigned to the same school as facilitator
+
+---
+
+### GET /volunteers/facilitator/:id/students/:id
+
+- Request body: none
+- Response: `200 OK` — single student assigned to the same school as facilitator
+
+---
+
+### GET /volunteers/facilitator/:id/volunteers
+
+- Request body: none
+- Response: `200 OK` — volunteers assigned to the same school as facilitator
+
+---
+
+### GET /volunteers/facilitator/:id/volunteers/:id
+
+- Request body: none
+- Response: `200 OK` — single volunteer assigned to the same school as facilitator
 
 ---
 
@@ -446,15 +488,34 @@ All facilitator routes require the user to be a facilitator (middleware checks `
 
 - Response: `201 Created` — message and created event object
 
-### PUT /volunteers/facilitator/:id/events/:eventId
+### PUT /volunteers/facilitator/:id/events/:id
 
 - Request headers: `Content-Type: application/json`, `Authorization`
 - Request body: event fields (id optional; router falls back to param)
 - Response: `200 OK` — updated event object
 
-### DELETE /volunteers/facilitator/:id/events/:eventId
+### DELETE /volunteers/facilitator/:id/volunteers/:id
 
 - Request headers: `Authorization`
 - Response: `204 No Content` on success
 
 ---
+
+### DELETE /volunteers/facilitator/:id/students/:id
+
+- Request headers: `Authorization`
+- Response: `204 No Content` on success
+
+---
+
+### DELETE /volunteers/facilitator/:id/parents/:id
+
+- Request headers: `Authorization`
+- Response: `204 No Content` on success
+
+---
+
+### DELETE /volunteers/facilitator/:id/events/:id
+
+- Request headers: `Authorization`
+- Response: `204 No Content` on success

@@ -3,11 +3,23 @@ const router = express.Router();
 export default router;
 
 import db from "#db/client";
-import { createStudent } from "#db/queries/students";
-import { createParent } from "#db/queries/parents";
+import {
+  createStudent,
+  deleteStudent,
+  getStudentById,
+  getStudentsBySchoolId,
+} from "#db/queries/students";
+import {
+  createParent,
+  getParentsBySchoolId,
+  getParentByStudentId,
+  deleteParent,
+} from "#db/queries/parents";
 import {
   createVolunteer,
+  deleteVolunteer,
   getVolunteerById,
+  getVolunteersBySchoolId,
   updateVolunteer,
 } from "#db/queries/volunteers";
 import {
@@ -259,6 +271,79 @@ router.param("parentId", async (req, res, next, id) => {
   next();
 });
 
+// Get all parents under the facilitator's school
+router.get("/facilitator/:id/parents", async (req, res) => {
+  try {
+    const parents = await getParentsBySchoolId(req.profile.school_id);
+    res.status(200).send(parents);
+  } catch (err) {
+    console.error("Error fetching parents for facilitator:", err);
+    res.status(500).send({ error: "Failed to fetch parents" });
+  }
+});
+
+// Get a specific parent under the facilitator's school
+router.get("/facilitator/:id/parents/:parentId", async (req, res) => {
+  const parentId = req.parentId;
+  const parent = await db.query(`SELECT * FROM parents WHERE id = $1`, [
+    parentId,
+  ]);
+  if (!parent.rows.length) return res.status(404).send("Parent not found.");
+  res.status(200).send(parent.rows[0]);
+});
+
+// Parameter for studentId
+router.param("studentId", async (req, res, next, id) => {
+  const studentId = parseInt(id, 10);
+  req.studentId = studentId;
+  next();
+});
+
+// Get all students under the facilitator's school
+router.get("/facilitator/:id/students", async (req, res) => {
+  try {
+    const students = await getStudentsBySchoolId(req.profile.school_id);
+    res.status(200).send(students);
+  } catch (err) {
+    console.error("Error fetching students for facilitator:", err);
+    res.status(500).send({ error: "Failed to fetch students" });
+  }
+});
+
+// Get a specific student under the facilitator's school
+router.get("/facilitator/:id/students/:studentId", async (req, res) => {
+  const studentId = req.studentId;
+  const student = await getStudentById(studentId);
+  if (!student) return res.status(404).send("Student not found.");
+  res.status(200).send(student);
+});
+
+// Parameter for volunteerId
+router.param("volunteerId", async (req, res, next, id) => {
+  const volunteerId = parseInt(id, 10);
+  req.volunteerId = volunteerId;
+  next();
+});
+
+// Get all volunteers under the facilitator's school
+router.get("/facilitator/:id/volunteers", async (req, res) => {
+  try {
+    const volunteers = await getVolunteersBySchoolId(req.profile.school_id);
+    res.status(200).send(volunteers);
+  } catch (err) {
+    console.error("Error fetching volunteers for facilitator:", err);
+    res.status(500).send({ error: "Failed to fetch volunteers" });
+  }
+});
+
+// Get a specific volunteer under the facilitator's school
+router.get("/facilitator/:id/volunteers/:volunteerId", async (req, res) => {
+  const volunteerId = req.volunteerId;
+  const volunteer = await getVolunteerById(volunteerId);
+  if (!volunteer) return res.status(404).send("Volunteer not found.");
+  res.status(200).send(volunteer);
+});
+
 // Create a new student under a parent
 router.post(
   "/facilitator/:id/parents/:parentId/students",
@@ -477,21 +562,21 @@ router.put(
 // Delete a volunteer under the facilitator's school
 router.delete("/facilitator/:id/volunteers/:volunteerId", async (req, res) => {
   const volunteerId = req.volunteerId;
-  await db.query(`DELETE FROM volunteers WHERE id = $1`, [volunteerId]);
+  await deleteVolunteer(volunteerId);
   res.status(204).send();
 });
 
 // Delete a student under the facilitator's school
 router.delete("/facilitator/:id/students/:studentId", async (req, res) => {
   const studentId = req.studentId;
-  await db.query(`DELETE FROM students WHERE id = $1`, [studentId]);
+  await deleteStudent(studentId);
   res.status(204).send();
 });
 
 // Delete a parent under the facilitator's school
 router.delete("/facititator/:id/parents/:parentId", async (req, res) => {
   const parentId = req.parentId;
-  await db.query(`DELETE FROM parents WHERE id = $1`, [parentId]);
+  await deleteParent(parentId);
   res.status(204).send();
 });
 

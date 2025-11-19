@@ -3,15 +3,15 @@ import express from "express";
 const app = express();
 export default app;
 
-const devOrigin = process.env.FRONTEND_URL_DEV || "http://localhost:5173";
+const devOrigin = process.env.FRONTEND_URL_DEV || "http://localhost:5174";
 const prodOrigin =
-  process.env.FRONTEND_URL_PROD || "https://bikeclubokc-frontend.onrender.com";
+  process.env.FRONTEND_URL_PROD || "https://okcbikeclub.netlify.app";
 const nodeEnv = process.env.NODE_ENV || "development";
 
 const allowedOrigins =
   nodeEnv === "production"
     ? [prodOrigin]
-    : [devOrigin, "http://localhost:5173"];
+    : [devOrigin, "http://localhost:5174"];
 
 import usersRouter from "#api/users";
 import parentsRouter from "#api/parents";
